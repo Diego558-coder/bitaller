@@ -2,6 +2,7 @@ import type { Db } from "./db";
 import { cop, fechaCorta, normalizarCelular, sinTildes } from "./format";
 import { AYUDA, LEY } from "./mensajes";
 import { sendWhatsApp } from "./whatsapp/provider";
+import { reenviarComprobantesPendientes } from "./servicios";
 
 export const LIMITE_CONSULTAS_DIA = 5;
 const PLACA_EN_TEXTO = /\b([A-Z]{3}\s?-?\s?(?:\d{3}|\d{2}[A-Z]))\b/;
@@ -37,6 +38,7 @@ export async function consultaPlaca(db: Db, telefono: string, placa: string): Pr
 export async function manejarEntrante(db: Db, telefono: string, texto: string, metaId?: string): Promise<string> {
   const tel = normalizarCelular(telefono);
   await registrarEntrante(db, tel, texto, metaId);
+  const reenviados = await reenviarComprobantesPendientes(db, tel).catch(() => 0);
   const t = sinTildes(texto || "").toLowerCase().replace(/[¡!¿?.,]/g, " ").replace(/\s+/g, " ").trim();
   const propios = await db.query(`SELECT * FROM vehiculos WHERE celular=$1 ORDER BY id`, [tel]);
   let respuesta: string; let tipo: "autorizacion" | "historial" | "otro" = "otro"; let vehiculoId: number | null = propios[0]?.id ?? null;
@@ -71,7 +73,7 @@ export async function manejarEntrante(db: Db, telefono: string, texto: string, m
       respuesta = r.texto;
       const v = (await db.query(`SELECT id FROM vehiculos WHERE placa=$1`, [placa]))[0];
       if (v && r.nivel === "completo") vehiculoId = v.id;
-    } else respuesta = AYUDA;
+    } else respuesta = reenviados ? "Arriba tiene su comprobante. Responda SÍ para autorizar recordatorios, o escriba la placa para ver el historial." : AYUDA;
   }
   await sendWhatsApp(db, { to: tel, text: respuesta, tipo, vehiculoId });
   return respuesta;

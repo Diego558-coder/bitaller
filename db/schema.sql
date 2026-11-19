@@ -91,3 +91,5 @@ CREATE TABLE IF NOT EXISTS consultas_placa (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS consultas_tel_idx ON consultas_placa(telefono, created_at);
+-- v2: comprobantes que Meta no pudo entregar (p. ej. plantilla sin aprobar); se reenvían cuando el cliente escribe
+ALTER TABLE servicios ADD COLUMN IF NOT EXISTS comprobante_pendiente BOOLEAN NOT NULL DEFAULT false;

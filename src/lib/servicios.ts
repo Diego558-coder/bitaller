@@ -96,7 +96,23 @@ export async function registrarServicio(db: Db, s: { tallerId: number; userId: n
       text: textoComprobante({ ...p, repuestos: res.usados, km: res.servicio.kilometraje, mecanico: res.mecanico, pedirAutorizacion: !res.vehiculo.autoriza_datos, appUrl: process.env.APP_URL }),
       template: process.env.META_TEMPLATE_COMPROBANTE ? { name: process.env.META_TEMPLATE_COMPROBANTE, params: paramsComprobante(p) } : null,
     });
-    if (envio.ok) await db.query(`UPDATE servicios SET comprobante_enviado=true WHERE id=$1`, [res.servicio.id]);
+    if (envio.ok) await db.query(`UPDATE servicios SET comprobante_enviado=true, comprobante_pendiente=false WHERE id=$1`, [res.servicio.id]);
+    else await db.query(`UPDATE servicios SET comprobante_pendiente=true WHERE id=$1`, [res.servicio.id]);
   }
   return { ...res, envio };
+}
+
+/** Cuando el cliente escribe (se abre la ventana de 24 h de Meta) se envían los comprobantes que quedaron pendientes. */
+export async function reenviarComprobantesPendientes(db: Db, celular: string) {
+  const pend = await db.query(`SELECT s.*, v.placa, v.autoriza_datos, t.nombre AS taller, u.nombre AS mecanico FROM servicios s
+    JOIN vehiculos v ON v.id=s.vehiculo_id JOIN talleres t ON t.id=s.taller_id LEFT JOIN usuarios u ON u.id=s.mecanico_id
+    WHERE v.celular=$1 AND s.comprobante_pendiente=true AND s.fecha > now() - interval '7 days' ORDER BY s.fecha`, [celular]);
+  let enviados = 0;
+  for (const s of pend) {
+    const usados = await db.query(`SELECT r.nombre, sr.cantidad FROM servicio_repuestos sr JOIN repuestos r ON r.id=sr.repuesto_id WHERE sr.servicio_id=$1`, [s.id]);
+    const r = await sendWhatsApp(db, { to: celular, tipo: "comprobante", vehiculoId: s.vehiculo_id,
+      text: textoComprobante({ placa: s.placa, fecha: s.fecha, trabajos: s.trabajos, repuestos: usados as any, km: s.kilometraje, mecanico: s.mecanico, total: s.total, taller: s.taller, pedirAutorizacion: !s.autoriza_datos, appUrl: process.env.APP_URL }) });
+    if (r.ok) { enviados++; await db.query(`UPDATE servicios SET comprobante_enviado=true, comprobante_pendiente=false WHERE id=$1`, [s.id]); }
+  }
+  return enviados;
 }

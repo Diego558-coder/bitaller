@@ -122,3 +122,27 @@ describe("webhook de Meta", () => {
     expect(extraerMensajes(JSON.parse(body))).toEqual([{ from: "573100000042", text: "XYZ45F", id: "wamid.1" }]);
   });
 });
+
+describe("modo meta: plantilla sin aprobar", () => {
+  it("deja el comprobante pendiente y lo envía cuando el cliente escribe", async () => {
+    const prev = { ...process.env }; const realFetch = globalThis.fetch;
+    Object.assign(process.env, { WHATSAPP_MODE: "meta", META_PHONE_NUMBER_ID: "1", META_ACCESS_TOKEN: "x", META_TEMPLATE_COMPROBANTE: "bitaller_comprobante" });
+    const enviados: any[] = [];
+    globalThis.fetch = (async (_u: any, init: any) => {
+      const b = JSON.parse(init.body); enviados.push(b);
+      if (b.type === "template") return new Response(JSON.stringify({ error: { message: "(#132001) Template name does not exist in the translation" } }), { status: 404 });
+      return new Response(JSON.stringify({ messages: [{ id: "wamid." + enviados.length }] }), { status: 200 });
+    }) as any;
+    try {
+      const r = await registrarServicio(db, { tallerId, userId: duenoId, rol: "dueno" }, { placa: "PEN12D", celular: "3159990001", trabajos: ["Cambio de aceite"], manoObra: 20000 });
+      expect(r.envio?.ok).toBe(false);
+      expect((await db.query(`SELECT comprobante_pendiente FROM servicios WHERE id=$1`, [r.servicio.id]))[0].comprobante_pendiente).toBe(true);
+      await manejarEntrante(db, "573159990001", "hola", "wamid.in1");
+      const texto = enviados.filter((b) => b.type === "text");
+      expect(texto[0].text.body).toMatch(/Comprobante de servicio/);
+      expect(texto[1].text.body).toMatch(/Arriba tiene su comprobante/);
+      const s = (await db.query(`SELECT comprobante_enviado, comprobante_pendiente FROM servicios WHERE id=$1`, [r.servicio.id]))[0];
+      expect(s.comprobante_enviado).toBe(true); expect(s.comprobante_pendiente).toBe(false);
+    } finally { globalThis.fetch = realFetch; process.env = prev; }
+  });
+});

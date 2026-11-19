@@ -59,7 +59,7 @@ export function RegistroForm({ repuestos, mecanicos, trabajos, rol, userId }: { 
       <h2 className="text-xl font-extrabold">Servicio guardado</h2>
       <p className="mt-2"><b className="tracking-widest">{res.placa}</b> · {res.trabajos}</p>
       <p className="text-2xl font-extrabold mt-2">{res.total}</p>
-      <p className={`mt-3 text-sm ${res.envioOk ? "text-selva" : "text-red-600"}`}>{res.envio}</p>
+      <p className={`mt-3 text-sm ${res.envioOk ? "text-selva" : res.envio.startsWith("Comprobante pendiente") ? "text-amber-700" : "text-red-600"}`}>{res.envio}</p>
       <div className="flex flex-col gap-2 mt-5">
         <button className="btn-primary" onClick={reset}>Registrar otro servicio</button>
         {res.demo && <Link className="btn-ghost" href={`/demo/whatsapp?tel=${res.telefono}`} target="_blank">Ver lo que recibió el cliente 💬</Link>}

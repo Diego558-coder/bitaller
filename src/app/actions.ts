@@ -42,7 +42,11 @@ export async function registrarAction(input: RegistroInput): Promise<RegistroRes
   try {
     const r = await registrarServicio(db, s, input);
     revalidatePath("/resumen"); revalidatePath("/repuestos"); revalidatePath("/vehiculos");
-    const envio = !r.envio ? "Comprobante no enviado (desactivado)" : r.envio.ok ? (r.envio.via === "demo" ? "Comprobante enviado (modo demo)" : "Comprobante enviado por WhatsApp") : "No se pudo enviar el comprobante: " + r.envio.error;
+    const envio = !r.envio ? "Comprobante no enviado (desactivado)" : r.envio.ok ? (r.envio.via === "demo" ? "Comprobante enviado (modo demo)" : "Comprobante enviado por WhatsApp") : /132001|132000|template/i.test(r.envio.error || "")
+        ? "Comprobante pendiente: Meta todavía no aprueba la plantilla. Pida al cliente escribir \"hola\" al WhatsApp del taller y el comprobante le llegará automáticamente."
+        : /131047|24 hours|re-engagement/i.test(r.envio.error || "")
+        ? "Comprobante pendiente: el cliente debe escribir \"hola\" al WhatsApp del taller y le llegará automáticamente."
+        : "No se pudo enviar el comprobante (quedó pendiente y se enviará cuando el cliente escriba): " + r.envio.error;
     return { ok: true, placa: r.vehiculo.placa, total: cop(r.total), trabajos: r.trabajos.join(", "), envio, envioOk: !!r.envio?.ok, demo: r.envio?.via === "demo", telefono: r.vehiculo.celular };
   } catch (e: any) {
     if (e instanceof RegistroError) return { ok: false, error: e.message };
