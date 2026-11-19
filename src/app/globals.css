@@ -1,0 +1,28 @@
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+
+@theme {
+  --color-selva: #1F7A5A;
+  --color-selva-dark: #14523D;
+  --color-selva-soft: #E6F2EC;
+  --color-motor: #F28C28;
+  --color-motor-dark: #D9741A;
+  --color-grafito: #23303B;
+  --color-niebla: #F4F7F5;
+  --color-gris: #5B6770;
+  --color-linea: #E3E8E5;
+  --font-sans: "Inter Variable", Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+html, body { background: var(--color-niebla); color: var(--color-grafito); }
+.card { @apply bg-white rounded-2xl border border-linea; }
+.btn { @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-semibold text-sm transition disabled:opacity-50 disabled:cursor-not-allowed; }
+.btn-primary { @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-semibold text-sm transition disabled:opacity-50 disabled:cursor-not-allowed bg-motor text-white hover:bg-motor-dark; }
+.btn-green { @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-semibold text-sm transition disabled:opacity-50 disabled:cursor-not-allowed bg-selva text-white hover:bg-selva-dark; }
+.btn-ghost { @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-semibold text-sm transition disabled:opacity-50 disabled:cursor-not-allowed bg-white border border-linea text-grafito hover:bg-niebla; }
+.input { @apply w-full rounded-xl border border-[#D5DBD8] bg-white px-3 py-2.5 text-[15px] outline-none focus:border-selva focus:ring-2 focus:ring-selva/20; }
+.label { @apply block text-xs font-semibold text-gris mb-1; }
+.chip { @apply rounded-full border px-3 py-1.5 text-[13px] font-medium cursor-pointer select-none transition; }
+.chip-on { @apply bg-selva border-selva text-white; }
+.chip-off { @apply bg-white border-[#D5DBD8] text-grafito hover:border-selva; }
+.tbl th { @apply text-left text-xs font-semibold text-gris py-2 px-3; }
+.tbl td { @apply py-2.5 px-3 border-t border-linea text-sm; }

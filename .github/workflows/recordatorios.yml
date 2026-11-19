@@ -1,0 +1,14 @@
+# Envía los recordatorios todos los días a las 8:00 a. m. (hora de Colombia = 13:00 UTC)
+name: Recordatorios diarios
+on:
+  schedule:
+    - cron: "0 13 * * *"
+  workflow_dispatch: {}
+jobs:
+  enviar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Llamar al cron de Bitaller
+        run: |
+          if [ -z "${{ secrets.APP_URL }}" ]; then echo "Configure los secretos APP_URL y CRON_SECRET"; exit 0; fi
+          curl -fsS --retry 3 --retry-delay 30 --max-time 120 -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" "${{ secrets.APP_URL }}/api/cron/recordatorios"
