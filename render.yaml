@@ -1,10 +1,5 @@
-# Blueprint de Render: crea la base de datos PostgreSQL y el servicio web de Bitaller
-databases:
-  - name: bitaller-db
-    plan: free
-    databaseName: bitaller
-    user: bitaller
-
+# Blueprint de Render: servicio web de Bitaller (plan gratis).
+# La base de datos es PostgreSQL de Supabase (gratis, no vence): pegue su cadena en DATABASE_URL.
 services:
   - type: web
     name: bitaller
@@ -18,9 +13,7 @@ services:
       - key: NODE_VERSION
         value: "22"
       - key: DATABASE_URL
-        fromDatabase:
-          name: bitaller-db
-          property: connectionString
+        sync: false
       - key: SEED_DEMO
         value: "true"
       - key: AUTH_SECRET
