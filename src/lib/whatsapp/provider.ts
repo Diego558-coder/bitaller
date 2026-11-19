@@ -40,7 +40,7 @@ export async function sendWhatsApp(db: Db, m: OutMessage): Promise<SendResult> {
       method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }, body: JSON.stringify(body),
     });
     const json: any = await res.json().catch(() => ({}));
-    if (!res.ok) { const err = json?.error?.message || `HTTP ${res.status}`; await guardar(db, m, "error: " + err); return { ok: false, error: err, via: useTemplate ? "meta-template" : "meta-text" }; }
+    if (!res.ok) { const err = json?.error?.message || `HTTP ${res.status}`; console.warn("[whatsapp] error de Meta:", err); await guardar(db, m, "error: " + err); return { ok: false, error: err, via: useTemplate ? "meta-template" : "meta-text" }; }
     const id = json?.messages?.[0]?.id; await guardar(db, m, "enviado", id);
     return { ok: true, id, via: useTemplate ? "meta-template" : "meta-text" };
   } catch (e: any) { await guardar(db, m, "error: " + e.message); return { ok: false, error: e.message, via: "meta-text" }; }
