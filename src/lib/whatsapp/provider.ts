@@ -13,6 +13,19 @@ export type SendResult = { ok: boolean; id?: string; error?: string; via: "demo"
 
 export function whatsappMode(): "demo" | "meta" { return process.env.WHATSAPP_MODE === "meta" ? "meta" : "demo"; }
 
+/** Configuración de Meta. Acepta los nombres META_* y también los del equipo (BUSSINES_PHONE, API_VERSION, WEBHOOK_VERIFY_TOKEN, ACCESS_TOKEN). */
+export function metaConfig() {
+  const e = process.env;
+  return {
+    phoneId: e.META_PHONE_NUMBER_ID || e.BUSSINES_PHONE || e.BUSINESS_PHONE || "",
+    token: e.META_ACCESS_TOKEN || e.ACCESS_TOKEN || e.WHATSAPP_TOKEN || "",
+    version: e.META_GRAPH_VERSION || e.API_VERSION || "v27.0",
+    verifyToken: e.META_VERIFY_TOKEN || e.WEBHOOK_VERIFY_TOKEN || "bitaller-verify",
+    appSecret: e.META_APP_SECRET || e.APP_SECRET || "",
+  };
+}
+let avisoSinSecreto = false;
+
 async function guardar(db: Db, m: OutMessage, estado: string, metaId?: string) {
   await db.query(`INSERT INTO mensajes (vehiculo_id, telefono, direccion, tipo, contenido, estado, meta_id) VALUES ($1,$2,'out',$3,$4,$5,$6)`,
     [m.vehiculoId ?? null, m.to, m.tipo, m.text, estado, metaId ?? null]);
@@ -26,8 +39,7 @@ export async function ventanaAbierta(db: Db, telefono: string): Promise<boolean>
 
 export async function sendWhatsApp(db: Db, m: OutMessage): Promise<SendResult> {
   if (whatsappMode() === "demo") { await guardar(db, m, "entregado"); return { ok: true, via: "demo" }; }
-  const version = process.env.META_GRAPH_VERSION || "v21.0";
-  const phoneId = process.env.META_PHONE_NUMBER_ID, token = process.env.META_ACCESS_TOKEN;
+  const { version, phoneId, token } = metaConfig();
   if (!phoneId || !token) { await guardar(db, m, "error: faltan credenciales de Meta"); return { ok: false, error: "Faltan META_PHONE_NUMBER_ID o META_ACCESS_TOKEN", via: "meta-text" }; }
   const abierta = await ventanaAbierta(db, m.to);
   const useTemplate = !abierta && !!m.template?.name;
@@ -47,8 +59,12 @@ export async function sendWhatsApp(db: Db, m: OutMessage): Promise<SendResult> {
 }
 
 /** Valida la cabecera X-Hub-Signature-256 que envía Meta */
-export function firmaValida(rawBody: string, header: string | null, secret = process.env.META_APP_SECRET): boolean {
-  if (!secret) return process.env.WHATSAPP_MODE !== "meta"; // sin secreto solo se acepta en modo demo
+export function firmaValida(rawBody: string, header: string | null, secret = metaConfig().appSecret): boolean {
+  if (!secret) {
+    // Modo desarrollo/MVP local: sin clave secreta no se valida la firma (configure META_APP_SECRET para producción)
+    if (!avisoSinSecreto) { console.warn("[webhook] META_APP_SECRET vacío: no se valida la firma de Meta (solo para desarrollo)"); avisoSinSecreto = true; }
+    return true;
+  }
   if (!header?.startsWith("sha256=")) return false;
   const expected = "sha256=" + crypto.createHmac("sha256", secret).update(rawBody, "utf8").digest("hex");
   const a = Buffer.from(expected), b = Buffer.from(header);

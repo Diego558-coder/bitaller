@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { manejarEntrante } from "@/lib/bot";
-import { extraerMensajes, firmaValida } from "@/lib/whatsapp/provider";
+import { extraerMensajes, firmaValida, metaConfig } from "@/lib/whatsapp/provider";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 // Verificación del webhook (Meta envía GET con hub.challenge)
 export async function GET(req: NextRequest) {
   const p = req.nextUrl.searchParams;
-  if (p.get("hub.mode") === "subscribe" && p.get("hub.verify_token") === (process.env.META_VERIFY_TOKEN || "bitaller-verify"))
+  if (p.get("hub.mode") === "subscribe" && p.get("hub.verify_token") === metaConfig().verifyToken)
     return new NextResponse(p.get("hub.challenge") ?? "", { status: 200, headers: { "Content-Type": "text/plain" } });
   return new NextResponse("Forbidden", { status: 403 });
 }

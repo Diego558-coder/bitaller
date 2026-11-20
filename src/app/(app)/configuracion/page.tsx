@@ -1,3 +1,4 @@
+import { metaConfig } from "@/lib/whatsapp/provider";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { getDb } from "@/lib/db";
@@ -23,7 +24,7 @@ export default async function Configuracion() {
         <p>Modo: <b>{modo === "demo" ? "Demostración (simulado dentro de la app)" : "Meta WhatsApp Cloud API"}</b></p>
         {modo === "meta" && <ul className="space-y-1"><li>Phone Number ID: {ok(!!process.env.META_PHONE_NUMBER_ID)}</li><li>Token de acceso: {ok(!!process.env.META_ACCESS_TOKEN)}</li><li>App Secret (firma del webhook): {ok(!!process.env.META_APP_SECRET)}</li><li>Plantilla de comprobante: {process.env.META_TEMPLATE_COMPROBANTE || <span className="text-gris">sin plantilla (texto libre)</span>}</li></ul>}
         <div className="bg-niebla rounded-xl p-3"><div className="label">URL del webhook para Meta</div><code className="break-all">{appUrl || "https://SU-DOMINIO"}/api/whatsapp/webhook</code>
-          <div className="label mt-2">Token de verificación</div><code>{process.env.META_VERIFY_TOKEN || "bitaller-verify"}</code></div>
+          <div className="label mt-2">Token de verificación</div><code>{metaConfig().verifyToken}</code></div>
       </section>}
       <CambiarPassword />
       <form action={logoutAction}><button className="btn-ghost">Cerrar sesión</button></form>
