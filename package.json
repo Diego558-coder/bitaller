@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3000",
+    "dev": "next dev -p 3100",
     "build": "next build",
-    "start": "next start",
-    "tunel": "cloudflared tunnel --url http://localhost:3000",
+    "start": "next start -p 3100",
+    "tunel": "cloudflared tunnel --url http://localhost:3100",
     "test": "vitest run",
     "db:reset": "tsx scripts/reset-db.ts",
     "cron": "tsx scripts/run-cron.ts"

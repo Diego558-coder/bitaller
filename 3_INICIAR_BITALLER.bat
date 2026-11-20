@@ -10,6 +10,6 @@ echo.
 echo Compilando cambios...
 call npm run build
 if errorlevel 1 ( echo ERROR al compilar & pause & exit /b )
-echo Iniciando en http://localhost:3000  (NO cierre esta ventana)
+echo Iniciando en http://localhost:3100  (NO cierre esta ventana)
 call npm start
 pause

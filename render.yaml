@@ -7,7 +7,7 @@ services:
     plan: free
     region: oregon
     buildCommand: npm ci && npm run build
-    startCommand: npm start
+    startCommand: npx next start -p $PORT
     healthCheckPath: /api/health
     envVars:
       - key: NODE_VERSION

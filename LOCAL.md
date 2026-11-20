@@ -35,7 +35,7 @@ Copie la URL que aparece, del tipo `https://algo-algo-algo.trycloudflare.com`.
 ```powershell
 npm start
 ```
-4. Compruebe en el navegador: `http://localhost:3000/api/health` debe decir `"whatsapp":"meta"`.
+4. Compruebe en el navegador: `http://localhost:3100/api/health` debe decir `"whatsapp":"meta"`.
 
 ## 4. Conectar Meta (lo hace Nicolás, en su app)
 WhatsApp > Configuración > Webhook:
@@ -46,7 +46,7 @@ WhatsApp > Configuración > Webhook:
 
 ## 5. Probar
 1. Desde un celular agregado como destinatario, escriba **hola** al número de prueba de Nicolás → el bot responde con el menú.
-2. Entre a `http://localhost:3000` (usuario `nicolas@bitaller.co`, clave `bitaller123`) y registre un servicio con ese celular → llega el comprobante.
+2. Entre a `http://localhost:3100` (usuario `nicolas@bitaller.co`, clave `bitaller123`) y registre un servicio con ese celular → llega el comprobante.
 3. Responda **SÍ** y luego escriba la placa → llega el historial.
 
 > Sin plantillas aprobadas, Meta solo deja responder a quien escribió en las últimas 24 h. Por eso el cliente escribe "hola" primero. Si un comprobante no se pudo enviar, queda pendiente y sale solo cuando el cliente escriba.
