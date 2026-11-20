@@ -4,6 +4,8 @@ MVP funcional de Bitaller: software por suscripción para talleres pequeños de 
 
 Proyecto del Taller de Emprendimiento e Innovación · Universidad de la Amazonia · 2026.
 
+> **Para correrlo en local con túnel y WhatsApp real, siga [LOCAL.md](LOCAL.md).**
+
 ## Qué incluye
 
 | Requisito | Dónde |
